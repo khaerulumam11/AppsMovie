@@ -2,6 +2,7 @@ package com.example.movieapps.adapter
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,6 +10,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.example.movieapps.MovieDetailActivity
 import com.example.movieapps.R
 import com.example.movieapps.data.remote.DatabaseAPI
 import com.example.movieapps.model.MovieModel
@@ -16,7 +18,7 @@ import org.json.JSONArray
 import org.json.JSONObject
 
 @SuppressLint("NotifyDataSetChanged")
-class AdapterMovie(var context: Context) : RecyclerView.Adapter<AdapterMovie.PromoHolder>() {
+class AdapterMovie(var context: Context) : RecyclerView.Adapter<AdapterMovie.MoviewHolder>() {
     var list: ArrayList<MovieModel.ResultsEntity> = ArrayList()
 
     init {
@@ -29,13 +31,13 @@ class AdapterMovie(var context: Context) : RecyclerView.Adapter<AdapterMovie.Pro
         notifyDataSetChanged()
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PromoHolder {
-        return PromoHolder(
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MoviewHolder {
+        return MoviewHolder(
             LayoutInflater.from(context).inflate(R.layout.item_list_movie, parent, false)
         )
     }
 
-    override fun onBindViewHolder(holder: PromoHolder, position: Int) {
+    override fun onBindViewHolder(holder: MoviewHolder, position: Int) {
         var modelList:MovieModel.ResultsEntity = list[position]
         holder.txtName.text = modelList.title
         val jsonRawData = context.resources.openRawResource(
@@ -68,7 +70,10 @@ class AdapterMovie(var context: Context) : RecyclerView.Adapter<AdapterMovie.Pro
             .load(DatabaseAPI.getPosterUrl(modelList.posterPath!!))
             .into(holder.imgMovie!!)
         holder.itemView.setOnClickListener {
-
+            var pindah = Intent(context, MovieDetailActivity::class.java)
+            pindah.putExtra("name", modelList.title)
+            pindah.putExtra("id", modelList.id)
+            context.startActivity(pindah)
         }
     }
 
@@ -76,7 +81,7 @@ class AdapterMovie(var context: Context) : RecyclerView.Adapter<AdapterMovie.Pro
         return list.size
     }
 
-    inner class PromoHolder(itemView: View?) : RecyclerView.ViewHolder(
+    inner class MoviewHolder(itemView: View?) : RecyclerView.ViewHolder(
         itemView!!
     ) {
         var txtName: TextView = itemView!!.findViewById(R.id.txtName)

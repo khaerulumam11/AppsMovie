@@ -1,61 +1,51 @@
 package com.example.movieapps
 
 import android.annotation.SuppressLint
-import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import android.os.Bundle
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.movieapps.adapter.AdapterGenre
 import com.example.movieapps.adapter.AdapterMovie
-import com.example.movieapps.databinding.ActivityMainBinding
-import com.example.movieapps.model.GenreModel
+import com.example.movieapps.databinding.ActivityMovieByGenreBinding
 import com.example.movieapps.model.MovieModel
 import com.example.movieapps.viewModel.MainViewModel
-import com.google.gson.Gson
 
-
-class MainActivity : AppCompatActivity() {
-    private lateinit var binding : ActivityMainBinding
+class MovieByGenreActivity : AppCompatActivity() {
+    private lateinit var binding : ActivityMovieByGenreBinding
     private lateinit var viewModel : MainViewModel
     private var adapterMovie : AdapterMovie?=null
-    private var adapterGenre : AdapterGenre?=null
     private var movieLiveData = ArrayList<MovieModel.ResultsEntity>()
-    private var genreLiveData = ArrayList<GenreModel.GenresEntity>()
     var page = 1
     var loading = false
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityMainBinding.inflate(layoutInflater)
+        binding = ActivityMovieByGenreBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        binding.toolbar.title = "Home"
-        binding.loading.show()
+
+        binding.toolbar.title = intent.getStringExtra("name")
         binding.toolbar.setTitleTextColor(resources.getColor(R.color.white))
-        adapterMovie = AdapterMovie(this)
-        adapterGenre = AdapterGenre(this)
+        binding.toolbar.setNavigationIcon(R.drawable.ic_baseline_arrow_back_white_24)
+        binding.toolbar.setNavigationOnClickListener { finish() }
+        adapterMovie = AdapterMovie(this@MovieByGenreActivity)
         viewModel = ViewModelProvider(this)[MainViewModel::class.java]
         viewModel.getDiscoverMovie(page)
         viewModel.observeMovieLiveData().observe(this, Observer { movieList ->
             movieLiveData.clear()
-            movieLiveData.addAll(movieList)
-            adapterMovie!!.setPost(movieList as ArrayList<MovieModel.ResultsEntity>)
+            for(a in movieList.indices){
+                if (movieList[a].genreIds!!.contains(intent.getIntExtra("id",0))){
+                    movieLiveData.add(movieList[a])
+                }
+            }
+            adapterMovie!!.setPost(movieLiveData )
             binding.loading.hide()
         })
-        viewModel.getGenreMovie()
-        viewModel.observeGenreLiveData().observe(this, Observer { genreList ->
-            genreLiveData.clear()
-            genreLiveData.addAll(genreList)
-            adapterGenre!!.setPost(genreList as ArrayList<GenreModel.GenresEntity>)
-            binding.loading.hide()
-        })
-        binding.discoverRecyclerView.layoutManager = LinearLayoutManager(this@MainActivity)
-        binding.discoverRecyclerView.adapter = adapterMovie
 
-        binding.genreRecyclerView.layoutManager = LinearLayoutManager(this@MainActivity, LinearLayoutManager.HORIZONTAL,false)
-        binding.genreRecyclerView.adapter = adapterGenre
+        binding.rvList.layoutManager = LinearLayoutManager(this@MovieByGenreActivity)
+        binding.rvList.adapter = adapterMovie
 
-        binding.discoverRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+        binding.rvList.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                 super.onScrollStateChanged(recyclerView, newState)
             }
@@ -72,11 +62,17 @@ class MainActivity : AppCompatActivity() {
                         binding.loading.show()
                         page+=1
                         viewModel.getDiscoverMovie(page)
-                        viewModel.observeMovieLiveData().observe(this@MainActivity, Observer { movieList ->
-                            adapterMovie!!.setPost(movieList as ArrayList<MovieModel.ResultsEntity>)
+                        viewModel.observeMovieLiveData().observe(this@MovieByGenreActivity, Observer { movieList ->
+                           var listMovie = ArrayList<MovieModel.ResultsEntity>()
+                            for(a in movieList.indices){
+                                if (movieList[a].genreIds!!.contains(intent.getIntExtra("id",0))){
+                                    listMovie.add(movieList[a])
+                                }
+                            }
+                            adapterMovie!!.setPost(listMovie)
                             binding.loading.hide()
                         })
-                        binding.discoverRecyclerView.post { // There is no need to use notifyDataSetChanged()
+                        binding.rvList.post { // There is no need to use notifyDataSetChanged()
                             adapterMovie!!.notifyItemChanged(movieLiveData.size-1)
                         }
                         loading = true
@@ -88,11 +84,17 @@ class MainActivity : AppCompatActivity() {
                         binding.loading.show()
                         page-=1
                         viewModel.getDiscoverMovie(page)
-                        viewModel.observeMovieLiveData().observe(this@MainActivity, Observer { movieList ->
-                            adapterMovie!!.setPost(movieList as ArrayList<MovieModel.ResultsEntity>)
+                        viewModel.observeMovieLiveData().observe(this@MovieByGenreActivity, Observer { movieList ->
+                            var listMovie = ArrayList<MovieModel.ResultsEntity>()
+                            for(a in movieList.indices){
+                                if (movieList[a].genreIds!!.contains(intent.getIntExtra("id",0))){
+                                    listMovie.add(movieList[a])
+                                }
+                            }
+                            adapterMovie!!.setPost(listMovie)
                             binding.loading.hide()
                         })
-                        binding.discoverRecyclerView.post { // There is no need to use notifyDataSetChanged()
+                        binding.rvList.post { // There is no need to use notifyDataSetChanged()
                             adapterMovie!!.notifyItemChanged(movieLiveData.size-1)
                         }
                         loading = false
@@ -101,5 +103,4 @@ class MainActivity : AppCompatActivity() {
             }
         })
     }
-
 }

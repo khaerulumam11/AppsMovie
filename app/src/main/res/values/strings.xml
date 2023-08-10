@@ -1,4 +1,7 @@
 <resources>
     <string name="app_name">MovieApps</string>
     <string name="show_all">Show All</string>
+    <string name="cast">Cast</string>
+    <string name="videos">Videos</string>
+    <string name="video">Video</string>
 </resources>
